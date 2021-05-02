@@ -16,15 +16,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     collectionOperations: [
         'post',
-        'get' => ['security' => "is_granted('ROLE_ADMIN')"]
+        'get' => ['security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_WAITER')"]
     ],
     itemOperations: [
-        'put' => [
-            'security' => "is_granted('ROLE_ADMIN')",
-        ],
+        'put',
         'get',
         'delete' => [
-            'security' => "is_granted('ROLE_ADMIN')",
+            'security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_WAITER')",
         ]
     ],
     denormalizationContext: [

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Controller\User\CreateUser;
+use App\Controller\User\CurrentUser;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -15,23 +16,36 @@ use Symfony\Component\Serializer\Annotation\Groups;
  */
 #[ApiResource(
     collectionOperations: [
-        'get' => ['access_control' => "is_granted('ROLE_ADMIN')"],
+        'get' => ['access_control' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER')"],
         'post' => [
             'controller' => CreateUser::class,
-            'access_control' => "is_granted('ROLE_ADMIN')",
+            'security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER')",
             'groups' => ["user:create"]
+        ],
+        'current' => [
+            'security' => "is_granted('ROLE_USER')",
+            'method' => 'get',
+            'path' => '/users/current',
+            'controller' => CurrentUser::class,
+            'pagination_enabled' => 'false',
+            'normalization_context' => [
+                'groups' => 'user:read'
+            ],
+            'swagger_context' => [
+                 'parameters' => ['']
+            ]
         ]
     ],
     itemOperations: [
         'put' => [
             'controller' => CreateUser::class,
-            'security' => "is_granted('ROLE_ADMIN')",
+            'security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') or object.owner == user",
             'denormalization_context' => [
                 'groups' => ["user:update"]
-            ],
+            ]
         ],
         'get' => [
-            'access_control' => "is_granted('ROLE_ADMIN')",
+            'access_control' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') or object.owner == user",
         ],
         'delete' => ['access_control' => "is_granted('ROLE_ADMIN')"]
     ],
@@ -56,10 +70,51 @@ class User implements UserInterface
     private $username;
 
     /**
+     * @ORM\Column(type="string", length=180)
+     * @Groups({"user:read", "user:update", "user:create"})
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(type="string", length=180)
+     * @Groups({"user:read", "user:update", "user:create"})
+     */
+    private $surname;
+
+    /**
+     * @ORM\Column(type="string", length=180)
+     * @Groups({"user:read", "user:update", "user:create"})
+     */
+    private $phone;
+
+    /**
+     * @return mixed
+     */
+    public function getPhone()
+    {
+        return $this->phone;
+    }
+
+    /**
+     * @param mixed $phone
+     */
+    public function setPhone($phone): void
+    {
+        $this->phone = $phone;
+    }
+
+    /**
      * @ORM\Column(type="json")
      * @Groups({"user:read", "user:update", "user:create"})
      */
     private $roles = [];
+
+    /**
+     * @var User The owner
+     *
+     * @ORM\ManyToOne(targetEntity=User::class)
+     */
+    public $owner;
 
     /**
      * @var string The hashed password
@@ -86,6 +141,30 @@ class User implements UserInterface
     public function setUsername(string $username): self
     {
         $this->username = $username;
+
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return (string) $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getSurname(): string
+    {
+        return (string) $this->surname;
+    }
+
+    public function setSurname(string $surname): self
+    {
+        $this->surname = $surname;
 
         return $this;
     }
