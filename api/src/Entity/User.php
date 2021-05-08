@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Controller\User\CreateUser;
 use App\Controller\User\CurrentUser;
+use App\Controller\User\UpdateUser;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -38,14 +39,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ],
     itemOperations: [
         'put' => [
-            'controller' => CreateUser::class,
-            'security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') or object.owner == user",
+            'controller' => UpdateUser::class,
+            'security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') or object.id == user",
             'denormalization_context' => [
                 'groups' => ["user:update"]
             ]
         ],
         'get' => [
-            'access_control' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') or object.owner == user",
+            'access_control' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') or object.id == user",
         ],
         'delete' => ['access_control' => "is_granted('ROLE_ADMIN')"]
     ],
@@ -108,13 +109,6 @@ class User implements UserInterface
      * @Groups({"user:read", "user:update", "user:create"})
      */
     private $roles = [];
-
-    /**
-     * @var User The owner
-     *
-     * @ORM\ManyToOne(targetEntity=User::class)
-     */
-    public $owner;
 
     /**
      * @var string The hashed password

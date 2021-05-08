@@ -19,7 +19,7 @@ class CreateUser
     public function __invoke(User $data): User
     {
         $this->validator->validate($data);
-        $data->owner = $data;
+
         return $data->setPassword(
             $this->passwordEncoder->encodePassword($data, $data->getPassword())
         );
