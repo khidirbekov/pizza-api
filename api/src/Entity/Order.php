@@ -34,7 +34,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
             "pizzeria:read",
             "GetBase",
             "pizzaGroup:read",
-            'pizza:read'
+            'pizza:read',
+            'GetFile'
         ]
     ]
 )]
@@ -62,7 +63,7 @@ class Order extends BaseEntity
      * Pizzeria
      *
      * @ORM\ManyToOne(targetEntity=Pizzeria::class)
-     * @Groups({"order:read", "order:write", "pizzeria:read", "GetBase", "pizza:read"})
+     * @Groups({"order:read", "order:write", "pizzeria:read", "GetBase", "pizza:read", "GetFile"})
      */
     #[Assert\NotBlank]
     public Pizzeria $pizzeria;
