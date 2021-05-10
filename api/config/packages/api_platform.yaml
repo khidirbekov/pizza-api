@@ -37,4 +37,6 @@ api_platform:
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
         route_prefix: '/api'
+    exception_to_status:
+        App\Exception\OrderException: 400
     

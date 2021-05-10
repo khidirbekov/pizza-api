@@ -48,7 +48,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         'get' => [
             'access_control' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') or object.id == user",
         ],
-        'delete' => ['access_control' => "is_granted('ROLE_ADMIN')"]
+        'delete' => ['access_control' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER')"]
     ],
     normalizationContext: [
         'groups' => ['user:read']

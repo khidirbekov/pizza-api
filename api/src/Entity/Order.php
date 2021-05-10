@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use App\Controller\Order\ChangeOrderStatus;
+use App\Controller\Order\ConfirmOrder;
+use App\Controller\Order\CreateOrder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -15,7 +18,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
  */
 #[ApiResource(
     collectionOperations: [
-        'post',
+        'post' => [
+            'controller' => CreateOrder::class
+        ],
         'get' => ['security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_WAITER')"]
     ],
     itemOperations: [
@@ -23,6 +28,27 @@ use Symfony\Component\Serializer\Annotation\Groups;
         'get',
         'delete' => [
             'security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_WAITER')",
+        ],
+        'confirm' => [
+            'method' => 'put',
+            'path' => '/orders/{id}/confirm',
+            'denormalization_context' => [
+                'groups' => [
+                    'order:confirm'
+                ]
+            ],
+            'controller' => ConfirmOrder::class
+        ],
+        'changeStatus' => [
+            'method' => 'put',
+            'path' => '/orders/{id}/change_status',
+            'denormalization_context' => [
+                'groups' => [
+                    'order:changeStatus'
+                ]
+            ],
+            'controller' => ChangeOrderStatus::class,
+            'security' => "is_granted('ROLE_ADMIN') or is_granted('ROLE_WAITER')"
         ]
     ],
     denormalizationContext: [
@@ -96,15 +122,25 @@ class Order extends BaseEntity
     /**
      *
      * @ORM\Column (type="boolean")
-     * @Groups({"order:read", "order:write", "GetFile"})
+     * @Groups({"order:read"})
      */
     public bool $isConfirm = false;
 
     /**
      * @ORM\Column
-     * @Groups({"order:read", "order:write", "GetFile"})
+     * @Groups({"order:read", "order:changeStatus"})
      */
     public string $status = "created";
+
+    /**
+     * @ORM\Column
+     */
+    public string $code;
+
+    /**
+     * @Groups({"order:confirm"})
+     */
+    public string $plainCode = '';
 
     public function getId(): ?int
     {
